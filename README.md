@@ -99,5 +99,58 @@ android 68-69 lesson
 android 70 lesson
 1.ListActivity:上面在xml中设置的ListView还可以放置其他组件，但实际运用中我们常用ListView就一个组件而不会用其他的组件，因此
                android中提供类一个ListActivity类，就是一个只有ListView组件的界面。它的默认布局是由一个单一的在屏幕中心的全屏幕的列表，用setcontentview()在oncreate()设置您自己的自定义屏幕布局视图布局，必须包含一个列表视图的对象
-               ID:"@android:id/list"(这是固定的不能是别的)
+               ID:"@android:id/list"(这是固定的不能是别的)，自定义视图对象列表视图是空的，必须包含一个视图对象的
+               ID：android:id/empty
+2.ListActivity实例：在jiava->包名->新建MainActivity2.java：
+  package com.example.mackerlee.android_68;
+
+  import android.app.ListActivity;
+  import android.os.Bundle;
+  import android.view.View;
+  import android.widget.AdapterView;
+  import android.widget.ArrayAdapter;
+  import android.widget.ListView;
+  
+  //--ListActivity的ID是必须是list
+  public class MainActivity2 extends ListActivity{
+  
+      //--不需要写布局，因为ListActivity已经提供了一个默认的包含ListView组件的布局
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          //--ListActivity中已经包含一个默认布局，所以不要用setContentView(R.layout.activity_main);
+          String[] names = {"李连杰","成龙","张国荣","希斯莱杰"};
+          //--填充数据依然采用适配器来实现
+          ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,names);
+          //--将适配器绑定到ListView组件上
+          setListAdapter(adapter);
+      }
+  
+      //--在ListActivity类中已经实现了OnItemClickListener，所以只要重写ListActivity监听方法即可，而不要再重新继承接口：
+      @Override 
+      protected void onListItemClick(ListView l, View v, int position, long id) {
+          super.onListItemClick(l, v, position, id);
+      }
+  }
+  在manifests->AndroidManifest.xml中更改启动的Activity:
+  <?xml version="1.0" encoding="utf-8"?>
+  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.example.mackerlee.android_68">
+  
+      <application
+          android:allowBackup="true"
+          android:icon="@mipmap/ic_launcher"
+          android:label="@string/app_name"
+          android:supportsRtl="true"
+          android:theme="@style/AppTheme">
+          <activity android:name=".MainActivity2"> //将默认的更改为MainActivity2便于启动测试
+              <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+  
+                  <category android:name="android.intent.category.LAUNCHER" />
+              </intent-filter>
+          </activity>
+      </application>
+  
+  </manifest>
+
  
