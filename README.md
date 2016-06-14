@@ -153,4 +153,116 @@ android 70 lesson
   
   </manifest>
 
- 
+android 71 lesson
+1.单选模式：带单选按钮的，
+2.实例实现单选模式：在res->layout->创建一个新的布局activity_main3.xml：
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+  
+      <ListView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/listView02"
+          android:layout_alignParentTop="true"
+          android:layout_alignParentStart="true" />
+  </RelativeLayout>
+  在java->包名->创建一个新的MainActivity3.java：
+  package com.example.mackerlee.android_68;
+
+  import android.os.Bundle;
+  import android.support.v7.app.AppCompatActivity;
+  import android.widget.ArrayAdapter;
+  import android.widget.ListView;
+  
+  /**
+   * Created by mackerlee on 2016/6/14.
+   */
+  public class MainActivity3 extends AppCompatActivity {
+      private ListView lv;
+  
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          setContentView(R.layout.activity_main3);
+          lv = (ListView)findViewById(R.id.listView02);
+          String[] citys = {"北京","上海","广州"};
+          //--创建单选布局适配器，内容填充上面的citys
+          ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,citys);
+          //--设置ListView为单选模式
+          lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+          //--将该listview与适配器绑定
+          lv.setAdapter(adapter);
+      }
+  }
+  在配置清单列表中设置MainActivity3.java为启动Activity：
+  <?xml version="1.0" encoding="utf-8"?>
+  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.example.mackerlee.android_68">
+  
+      <application
+          android:allowBackup="true"
+          android:icon="@mipmap/ic_launcher"
+          android:label="@string/app_name"
+          android:supportsRtl="true"
+          android:theme="@style/AppTheme">
+          <activity android:name=".MainActivity3"> //设置启动Activity
+              <intent-filter>
+                  <action android:name="android.intent.action.MAIN" /> 
+                  <category android:name="android.intent.category.LAUNCHER" />
+              </intent-filter>
+          </activity>
+      </application>
+  
+  </manifest>
+
+3.多选列表实例：其余不变，在MainActivity3.java中将单选改为多选模式：
+  package com.example.mackerlee.android_68;
+
+  import android.os.Bundle;
+  import android.support.v7.app.AppCompatActivity;
+  import android.view.View;
+  import android.widget.AdapterView;
+  import android.widget.ArrayAdapter;
+  import android.widget.ListView;
+  
+  /**
+   * Created by mackerlee on 2016/6/14.
+   */
+  public class MainActivity3 extends AppCompatActivity implements AdapterView.OnItemClickListener{
+      private ListView lv;
+  
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          setContentView(R.layout.activity_main3);
+          lv = (ListView)findViewById(R.id.listView02);
+          String[] citys = {"北京","上海","广州","深圳"};
+  
+          /**
+           *  单选ListView实现
+          //--创建单选布局适配器，内容填充上面的citys
+          ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,citys);
+          //--设置ListView为单选模式
+          lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+          //--将该listview与适配器绑定
+          lv.setAdapter(adapter);
+           */
+          //--创建多选布局适配器，内容填充上面的citys
+          ArrayAdapter<String> adapterMultiple = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,citys);
+          //--设置ListView为多选模式
+          lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+          //--将该listview与适配器绑定
+          lv.setAdapter(adapterMultiple);
+          //--注册单击事件
+          lv.setOnItemClickListener(this);
+      }
+  
+      //--实现单击响应事件方法
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+          System.out.println(view.getClass()); //可知是CheckedTextView，可用于判断是否被选中
+      }
+  }
+
+
+
