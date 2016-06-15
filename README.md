@@ -264,5 +264,14 @@ android 71 lesson
       }
   }
 
-
+android 72 ListView实现图文列表
+1.使用SimpleAdapter建立复杂的列表项：
+   SimpleAdapter(Context context,List<?extends Map<String,?>>data,int resource,String[]from,int[]to)
+   参数：context:SimpleAdapter关联的View的运行环境;
+         data：一个Map组成的List,在列表中的每个条目对应列表中的一行，每个一个map中应该包含所有在from参数中指定的键;
+         resource:一个定义列表项的布局文件的资源ID，布局文件至少包含那些在to中定义了的ID;
+         from:一个被添加到Map映射上的键名;
+         to:将绑定数据的视图的ID，跟from参数对应，这些应该全是TextView;
+         
+         
 
