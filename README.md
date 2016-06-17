@@ -272,6 +272,7 @@ android 72 ListView实现图文列表
          resource:一个定义列表项的布局文件的资源ID，布局文件至少包含那些在to中定义了的ID;
          from:一个被添加到Map映射上的键名;
          to:将绑定数据的视图的ID，跟from参数对应，这些应该全是TextView;
+2.每一个item就是一个map,多个map装在一个list中来组装一个列表项.
          
          
 
