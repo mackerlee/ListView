@@ -264,7 +264,7 @@ android 71 lesson
       }
   }
 
-android 72 ListView实现图文列表
+android 72-73 ListView实现图文列表
 1.使用SimpleAdapter建立复杂的列表项：
    SimpleAdapter(Context context,List<?extends Map<String,?>>data,int resource,String[]from,int[]to)
    参数：context:SimpleAdapter关联的View的运行环境;
@@ -273,6 +273,108 @@ android 72 ListView实现图文列表
          from:一个被添加到Map映射上的键名;
          to:将绑定数据的视图的ID，跟from参数对应，这些应该全是TextView;
 2.每一个item就是一个map,多个map装在一个list中来组装一个列表项.
-         
+3.SimpleAdapter实例：在res->layout->创建一个新的ListView组件布局activity_main72.xml：
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+  
+      <ListView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:id="@+id/listView72"
+          android:layout_alignParentTop="true"
+          android:layout_alignParentStart="true" />
+  </RelativeLayout>
+  创建一个新的Activity在main->java->包名->MainActivity72.java：
+  package com.example.mackerlee.android_68;
+
+  import android.os.Bundle;
+  import android.support.v7.app.AppCompatActivity;
+  import android.widget.ListView;
+  import android.widget.SimpleAdapter;
+  
+  import java.util.ArrayList;
+  import java.util.HashMap;
+  import java.util.List;
+  import java.util.Map;
+  
+  /**
+   * Created by mackerlee on 2016/6/15.
+   */
+  public class MainActivity72 extends AppCompatActivity {
+  
+      private ListView lv;
+  
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          setContentView(R.layout.activity_main72);
+          lv = (ListView)findViewById(R.id.listView72);
+  
+          //--一个列表项的内容，即一个Iitem
+          Map<String,Object> item1 = new HashMap<>();
+          item1.put("image",R.drawable.jt1); //放入一个图片，image是标记，可以随便取
+          item1.put("name","小白"); //以上三个组成一个列表项
+  
+          //--第二个列表项的内容，即一个Iitem
+          Map<String,Object> item2 = new HashMap<>();
+          item2.put("image",R.drawable.yx2); //放入一个图片
+          item2.put("name","小黑"); //以上三个组成一个列表项
+  
+          //--构造List内容
+          List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+          data.add(item1);
+          data.add(item2);
+  
+          //--后面两个参数是指建立从new String[]{"image","name"}到new int[]{R.id.imageview01,R.id.textview01}的映射
+          //----String[]{"image","name"}是item标签中的标签名称，
+          //----int[]{R.id.imageview01,R.id.textview01}是item布局的id,表示image放到imageview01,name放到textview01
+          SimpleAdapter simpleAdapter = new SimpleAdapter(this,data,R.layout.main72_item,
+                  new String[]{"image","name"},new int[]{R.id.imageview01,R.id.textview01});
+          //--SimpleAdapter用于适配ListView的自定义样式布局,绑定ListView
+          lv.setAdapter(simpleAdapter);
+      }
+  }
+  在res->layout->创建一个ListView中的每个item的布局main72_item.xml:
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+  
+      <ImageView
+          android:id="@+id/imageview01"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:src="@drawable/yx2" />
+      <TextView
+          android:id="@+id/textview01"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="文字说明"
+          android:layout_toRightOf="@id/imageview01"/>
+  
+  </RelativeLayout>
+  在mainfests->AAndroidMainifest.xml中更改启动的activity:
+  <?xml version="1.0" encoding="utf-8"?>
+  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.example.mackerlee.android_68">
+  
+      <application
+          android:allowBackup="true"
+          android:icon="@mipmap/ic_launcher"
+          android:label="@string/app_name"
+          android:supportsRtl="true"
+          android:theme="@style/AppTheme">
+          <activity android:name=".MainActivity72"> //启动项设置为main->java->包名->MainActivity72.java
+              <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+  
+                  <category android:name="android.intent.category.LAUNCHER" />
+              </intent-filter>
+          </activity>
+      </application>
+
+</manifest>
+
          
 
