@@ -376,5 +376,9 @@ android 72-73 ListView实现图文列表
 
 </manifest>
 
-         
+android 74 lesson
+1.BaseAdapter实现更加灵活的列表：可以实现比simpleAdapter更复杂的列表布局，由于BaseAdapter是一个抽象类，使用该类需要自己
+            写一个适配器继承该类,使得每一个步骤都可控可自行定义。SimpleAdapter其实就是继承类BaseAdapter。
+    --
+    
 
