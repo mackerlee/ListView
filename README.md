@@ -376,5 +376,171 @@ android 72-73 ListView实现图文列表
 
 </manifest>
 
-         
+android 74 lesson
+1.BaseAdapter实现更加灵活的列表：可以实现比simpleAdapter更复杂的列表布局，由于BaseAdapter是一个抽象类，使用该类需要自己
+            写一个适配器继承该类,使得每一个步骤都可控可自行定义。SimpleAdapter其实就是继承类BaseAdapter。需要实现4个方法
+    --public int getCount():获取列表项的总数;
+    --public Object getItem(int arg0):根据位置获取每个列表项对象；
+    --public long getItemId(int position):根据位置获取每个列表项的id;
+    --public View getView(int position,View convertView,ViewGroup parent):创建并返回一个item视图
+2.ListView的优化：
+  --重复使用convertView；
+  --使用ViewHolder提高在容器中查找组件的效率。
+3.自定义组件实例:
+  在res->layout->新创建一个ListView组件activity_main74.xml：
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+  
+      <ListView
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/listView74"
+          android:layout_alignParentTop="true"
+          android:layout_alignParentStart="true" />
+  </RelativeLayout>
+  
+  在res->layout->新建一个item的视图组件main74_item.xml:
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+  
+      <ImageView
+          android:id="@+id/imageview74"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:src="@drawable/yx2" />
+      <TextView
+          android:id="@+id/textview74"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="文字说明"
+          android:layout_toRightOf="@id/imageview74"/>
+  
+  </RelativeLayout>
+  
+  在java->包名->新建一个MainActivity74.java：
+  package com.example.mackerlee.android_68;
 
+  import android.os.Bundle;
+  import android.support.v7.app.AppCompatActivity;
+  import android.view.View;
+  import android.view.ViewGroup;
+  import android.widget.BaseAdapter;
+  import android.widget.ImageView;
+  import android.widget.ListView;
+  import android.widget.TextView;
+  
+  /**
+   * Created by mackerlee on 2016/6/19.
+   */
+  public class MainActivity74 extends AppCompatActivity {
+  
+      private ListView lv;
+  
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          setContentView(R.layout.activity_main74);
+          lv = (ListView)findViewById(R.id.listView74);
+          lv.setAdapter(new MyAdapter());
+      }
+  
+      //--
+      private int[] images = {R.drawable.jt1,R.drawable.yx2,R.drawable.jt1,R.drawable.yx2,R.drawable.jt1,R.drawable.yx2,R.drawable.jt1,R.drawable.yx2};
+      private String[] names = {"刘德华","张国荣","周星驰","成龙","林青霞","梁家辉","周润发","梁朝伟"};
+  
+      //--自定义适配器,实现其四个方法
+      class MyAdapter extends BaseAdapter{
+  
+          //--获取列表项的总数
+          @Override
+          public int getCount() {
+              return names.length;
+          }
+  
+          //--根据位置获取每一个列表项对象
+          @Override
+          public Object getItem(int position) { //返回类型是Object，即可以是任意类型返回值
+              return names[position];
+          }
+  
+          //--根据位置获取每个列表项的id
+          @Override
+          public long getItemId(int position) {
+              return position; //id和position数据是一样的但性质不同
+          }
+  
+          //--通过getView创建并返回一个视图
+          //----参数：position位置，converview转换视图，ViewGroup parent父组件，没有就空NULL
+          //----getView方法会被循环调用，不断加载列表项用于显示,如果有滚动条不断滑动滚动条会不停创建刷新的列表项
+          //----因此存在性能影响必须进行优化,两种优化方式：
+          //--------1.重复使用convertView参数:类似扶手电梯的原理，将看不见的列表item给下一个拉出来的item用.
+          //--------2.使用ViewHolder提高在容器中查找组件的效率
+          @Override
+          public View getView(int position, View convertView, ViewGroup parent) {
+              //--convertView如果为null表示满屏显示的item的7个VIEW没有空闲的view，当上拉或下拉时
+              //-----消失的那个就会给convertView，因此可以利用convertView，而无须再次重建.
+              System.out.println("---------------------"+convertView);
+              System.out.println("position="+position);
+  
+              //--实现这几个对象的来回利用重复赋值
+              if(convertView == null){
+                  //--获取布局填充器,getLayoutInflater通过调用inflate方法来找res/layout/下的xml布局文件，并且实例化
+                  //----inflate方法：用于动态加载布局，其参数是View的layout的ID和root生成的层次结构的根视图
+                  //-----------------本例中没有父视图了所以用null
+                  //View view = getLayoutInflater().inflate(R.layout.main74_item,null);
+                  convertView = getLayoutInflater().inflate(R.layout.main74_item,null);
+                  ViewHolder vh = new ViewHolder();
+                  vh.iv = (ImageView)convertView.findViewById(R.id.imageview74);
+                  vh.tv = (TextView)convertView.findViewById(R.id.textview74);
+                  //--设置convertView的标记,这样就不需要每次都findViewById了，提高了性能
+                  convertView.setTag(vh);
+              }else{
+                  //--从标记中获取vh
+                  ViewHolder vh = (ViewHolder)convertView.getTag();
+                  vh.iv.setImageResource(images[position]);
+                  vh.tv.setText(names[position]);
+              }
+              //System.out.println(convertView); //看看每次创建的对象是否一样
+              //--如果按下面这种写法，findViewById每次都要去converView中重新查找
+              //ImageView iv = (ImageView)convertView.findViewById(R.id.imageview74);  //注意只有设置主布局时可以直接用findViewById,其他都要用对象调用findViewById
+              //TextView tv = (TextView)convertView.findViewById(R.id.textview74);
+  
+              //--填充iv和tv资源
+              //iv.setImageResource(images[position]);
+              //tv.setText(names[position]);
+  
+              return convertView;
+          }
+      }
+  
+      //--定义一个内部类，在该类中定义视图中所要拥有的组件
+      static class ViewHolder{
+          ImageView iv;
+          TextView tv;
+      }
+  }
+
+  在AndroidManifest.xml中修改启动项：
+  <?xml version="1.0" encoding="utf-8"?>
+  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.example.mackerlee.android_68">
+  
+      <application
+          android:allowBackup="true"
+          android:icon="@mipmap/ic_launcher"
+          android:label="@string/app_name"
+          android:supportsRtl="true"
+          android:theme="@style/AppTheme">
+          <activity android:name=".MainActivity74">
+              <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+  
+                  <category android:name="android.intent.category.LAUNCHER" />
+              </intent-filter>
+          </activity>
+      </application>
+  
+  </manifest>
