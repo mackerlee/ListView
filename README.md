@@ -544,3 +544,12 @@ android 74 lesson
       </application>
   
   </manifest>
+
+lesson 79 刷新分页
+1.ListView刷新分页：当ListView一页显示不完时，就要用到刷新分页，其实现步骤如下：
+  --当前Activity implements OnScrollListener;
+  --实现接口的方法;
+  --ListView注册滚动监听;
+  --Adapter中添加增加数据的函数;
+  --获取2页以后的数据后，adapter增加数据，并刷新，用到Adapter中的notifyDataSetChanged()方法;
+  
