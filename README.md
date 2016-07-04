@@ -544,3 +544,243 @@ android 74 lesson
       </application>
   
   </manifest>
+
+lesson 79-83 刷新分页
+1.ListView刷新分页：当ListView一页显示不完时，就要用到刷新分页，其实现步骤如下：
+  --当前Activity implements OnScrollListener;
+  --实现接口的方法;
+  --ListView注册滚动监听;
+  --Adapter中添加增加数据的函数;
+  --获取2页以后的数据后，adapter增加数据，并刷新，用到Adapter中的notifyDataSetChanged()方法;
+2.实例：实现一个列表，当下拉到最低部时，动态加载刷新列表显示：
+  自定义一个列表布局res->layout->activity_main79.xml:
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+  
+      <ListView
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/listView79"
+          android:layout_alignParentTop="true"
+          android:layout_alignParentStart="true" />
+  </RelativeLayout>
+  
+  在定义一个列表项的布局res->layout->main79_item.xml:
+  <?xml version="1.0" encoding="utf-8"?>
+  <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+  
+      <TextView
+          android:id="@+id/title79"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="新闻标题" />
+      <TextView
+          android:id="@+id/content79"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="新闻内容"
+          android:layout_below="@id/title79"/>
+  
+  </RelativeLayout>
+  将列表项的内容存储到一个对象中java->包名->News79.java
+  package com.example.mackerlee.android_68;
+
+  /**
+   * 新闻对象
+   * Created by mackerlee on 2016/6/26.
+   */
+  public class News79 {
+      //--Android中能不封装就尽量不封装
+      String title;
+      String content;
+  
+  }
+  
+  定义一个加载等待的布局res->layout->loading.xml:
+  <?xml version="1.0" encoding="utf-8"?>
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:orientation="vertical"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+  
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:text="正在加载..."
+          android:id="@+id/loading79" />
+  </LinearLayout>
+  
+  创建一个activity在java->包名->MainActivity79.java:
+  package com.example.mackerlee.android_68;
+
+  import android.os.Bundle;
+  import android.os.Message;
+  import android.support.v7.app.AppCompatActivity;
+  import android.view.View;
+  import android.view.ViewGroup;
+  import android.widget.AbsListView;
+  import android.widget.BaseAdapter;
+  import android.widget.ListView;
+  import android.widget.TextView;
+  
+  import java.util.ArrayList;
+  import java.util.logging.Handler;
+  import java.util.logging.LogRecord;
+  
+  /**
+   * Created by mackerlee on 2016/6/26.
+   */
+
+  //--AbsListView.OnScrollListener接口用于监听滚动条滚动事件
+  public class MainActivity79 extends AppCompatActivity implements AbsListView.OnScrollListener{
+  
+      private ListView lv;
+      private ArrayList<News79> news = new ArrayList<News79>();
+      MyAdapter adapter;
+      protected void onCreate(Bundle savedInstanceState) {
+          super.onCreate(savedInstanceState);
+          setContentView(R.layout.activity_main79);
+          lv = (ListView)findViewById(R.id.listView79);
+          lv.setOnScrollListener(this);
+          //--ListView添加一个底部的视图,用于模拟上拉时加载分页显示正在加载
+          View footer = getLayoutInflater().inflate(R.layout.loading,null);
+          lv.addFooterView(footer); //添加底部视图
+          //initDate(); //先加载20条初始数据
+          //--通常初始化也是用线程完成
+          new LoadDataThread().start(); //加载数据的工作线程
+          adapter = new MyAdapter();
+          lv.setAdapter(adapter);
+      }
+  
+      int index = 1;//数据的计数器，相当于数据索引
+      //--初始化数据
+      void initDate(){
+          for (int i = 0;i < 20;i++){
+              News79 n = new News79();
+              n.title = "title-"+index;
+              n.content = "content-"+index;
+              index++;
+              news.add(n);
+          }
+      }
+  
+      //int scrollState = 0;
+      int visibleLastIndex;
+  
+      //--滚动状态发生变化时的方法，scrollState有三个状态：
+      //----SCROLL_SATE_FLING:用户已经滚动了但手已经离开类屏幕但滚动条还在走
+      //----SCROLL_STATE_IDLE:没有滚动状态
+      //----SCROLL_STATE_TOUCH_SCROLL:用户正在滚动手还在屏幕上
+      @Override
+      public void onScrollStateChanged(AbsListView view, int scrollState) {
+          //this.scrollState = scrollState;
+          System.out.println("scrollState="+scrollState);
+          //--判断ListView处于最后一个值并且当停止滑动时进行判断：已滑到最下面，要加载新数据
+  
+          if(visibleLastIndex == adapter.getCount()&&scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE){
+              //System.out.println(visibleLastIndex);
+              new LoadDateThread().start(); //开始线程
+          }
+      }
+  
+      //--正在滚动时的方法
+      //----参数就是指这个ListView
+      //----firstVisibleItem:屏幕上第一个可见的item是第几个，即最上面滑动到是第几个item；从0开始算
+      //----visibleItemCount:屏幕上可见的item的总数
+      //----totalItemCount：所有item的总数包括不可见的
+      @Override
+      public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+          //System.out.println("firstVisibleItem="+firstVisibleItem);
+          //System.out.println("visibleItemCount="+visibleItemCount);
+          //System.out.println("totalItemCount="+totalItemCount);
+          visibleLastIndex = firstVisibleItem + visibleItemCount - 1;
+      }
+  
+      //--Handler是线程之间通信的桥梁,发送数据的通道,必须在主线程中声明
+      private android.os.Handler handler = new android.os.Handler(){
+          public void handleMessage(Message msg){
+              switch (msg.what){
+                  case 1: 
+               //--通知适配器重新加载更新ListView数据列表,之所以不在子线程中直接调用是因为子线程不允许直接访问主线程的UI组件
+                      adapter.notifyDataSetChanged(); // List里面的数据就会刷新重新加载
+                      break;
+                  default:
+                      break;
+              }
+          }
+  
+      };
+  
+      //--定义一个线程模拟新加载的数据,子线程不允许访问主线程UI的组件(保证主线程UI组件安全),但可以申请通知主线程
+      class LoadDateThread extends Thread{
+          public void run(){
+              initDate();
+              try{
+                  Thread.sleep(2000);
+              } catch (InterruptedException e) {
+                  e.printStackTrace();
+              }
+              //--通过Handler处理器去通知主线程说数据已经加载完毕
+              handler.sendEmptyMessage(1); //发一个标记1的消息对象过去给主线程,该方法执行后，会触发handleMessage()方法的执行
+          }
+  
+      }
+  
+      //--静态内部类相当于外部类，外部类解析的性能要高于内部类
+      //--自定义适配器
+       class MyAdapter extends BaseAdapter{
+  
+          //--当系统开始绘制ListView的时候，首先调用getCount()方法。得到它的返回值，即ListView的长度。
+          @Override
+          public int getCount() {
+              return news.size(); //获取长度
+          }
+  
+          @Override
+          public Object getItem(int position) {
+              return news.get(position); //获取对象
+          }
+  
+          @Override
+          public long getItemId(int position) {
+              return position; //获取序列号
+          }
+  
+          //--上面步骤之后系统调用getView()方法，根据这个长度逐一绘制ListView的每一行
+          @Override
+          public View getView(int position, View convertView, ViewGroup parent) {
+              ViewHolder vh = null;
+              if(convertView == null){
+                  convertView = getLayoutInflater().inflate(R.layout.main79_item,null);
+                  vh = new ViewHolder();
+                  vh.tvTitle = (TextView)convertView.findViewById(R.id.title79);
+                  vh.tvContent = (TextView)convertView.findViewById(R.id.content79);
+                  convertView.setTag(vh);
+              }else {
+                  vh = (ViewHolder)convertView.getTag();
+              }
+              //--从ArrayList或Vectory中取出数据填充到ListView列表中
+              News79 n = news.get(position);
+              vh.tvTitle.setText(n.title);
+              vh.tvContent.setText(n.content);
+              return convertView;
+          }
+      }
+  
+      //--用一个静态类来存储每个列表项的值
+      static class ViewHolder{
+          TextView tvTitle;
+          TextView tvContent;
+      }
+  
+  }
+
+  
+  
+  
+  
+  
